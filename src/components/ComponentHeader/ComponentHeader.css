@@ -1,0 +1,116 @@
+.component-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.component-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.component-header-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* Mobile menu button - hidden by default */
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.mobile-menu-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.mobile-menu-btn:active {
+  background: var(--bg-active);
+}
+
+/* Show mobile menu button on tablet and below */
+@media (max-width: 1024px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+}
+
+.component-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.component-header-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.component-header-action:hover {
+  color: var(--text-primary);
+}
+
+.component-header-action svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Account indicator */
+.component-header-divider {
+  color: var(--text-muted);
+  font-weight: 300;
+  opacity: 0.5;
+}
+
+.component-header-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.component-header-account-logo {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-surface);
+}
+
+.component-header-account-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Hide account name on small screens */
+@media (max-width: 640px) {
+  .component-header-account-name {
+    display: none;
+  }
+}
