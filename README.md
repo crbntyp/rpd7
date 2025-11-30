@@ -54,15 +54,6 @@ npm run build
 npm run preview
 ```
 
-## Deployment
-
-Deployed to: `crbntyp.com/rpd7/`
-
-```bash
-npm run build
-rsync -avz ./dist/ root@148.230.122.104:/var/www/crbntyp/rpd7/
-```
-
 ## License
 
 MIT
