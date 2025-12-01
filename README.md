@@ -4,25 +4,20 @@ A modern React-based navigation redesign concept featuring a sleek sidebar inter
 
 ## Screenshots
 
-### Collapsed Sidebar
+<p>
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.55.06.png" width="49%" alt="Collapsed Sidebar">
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.55.36.png" width="49%" alt="Detached Sidebar">
+</p>
 
-![Collapsed Sidebar](src/gitimgs/Screenshot%202025-12-01%20at%2019.55.06.png)
+<p>
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.55.40.png" width="49%" alt="Detached Sidebar Alt">
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.22.png" width="49%" alt="Expanded Sidebar">
+</p>
 
-### Detached Sidebar
-
-![Detached Sidebar](src/gitimgs/Screenshot%202025-12-01%20at%2019.55.36.png)
-
-![Detached Sidebar Alt](src/gitimgs/Screenshot%202025-12-01%20at%2019.55.40.png)
-
-### Expanded Sidebar
-
-![Expanded Sidebar](src/gitimgs/Screenshot%202025-12-01%20at%2019.54.22.png)
-
-### Account Switcher
-
-![Account Switcher](src/gitimgs/Screenshot%202025-12-01%20at%2019.54.34.png)
-
-![Account Switched](src/gitimgs/Screenshot%202025-12-01%20at%2019.54.44.png)
+<p>
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.34.png" width="49%" alt="Account Switcher">
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.44.png" width="49%" alt="Account Switched">
+</p>
 
 ## Features
 
