@@ -2,6 +2,28 @@
 
 A modern React-based navigation redesign concept featuring a sleek sidebar interface with multiple theme options.
 
+## Screenshots
+
+### Collapsed Sidebar
+
+![Collapsed Sidebar](src/gitimgs/Screenshot%202025-12-01%20at%2019.55.06.png)
+
+### Detached Sidebar
+
+![Detached Sidebar](src/gitimgs/Screenshot%202025-12-01%20at%2019.55.36.png)
+
+![Detached Sidebar Alt](src/gitimgs/Screenshot%202025-12-01%20at%2019.55.40.png)
+
+### Expanded Sidebar
+
+![Expanded Sidebar](src/gitimgs/Screenshot%202025-12-01%20at%2019.54.22.png)
+
+### Account Switcher
+
+![Account Switcher](src/gitimgs/Screenshot%202025-12-01%20at%2019.54.34.png)
+
+![Account Switched](src/gitimgs/Screenshot%202025-12-01%20at%2019.54.44.png)
+
 ## Features
 
 - **Collapsible Sidebar** - Minimizes to icon-only mode
