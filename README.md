@@ -5,18 +5,9 @@ A modern React-based navigation redesign concept featuring a sleek sidebar inter
 ## Screenshots
 
 <p>
-<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.55.06.png" width="49%" alt="Collapsed Sidebar">
-<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.55.36.png" width="49%" alt="Detached Sidebar">
-</p>
-
-<p>
-<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.55.40.png" width="49%" alt="Detached Sidebar Alt">
-<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.22.png" width="49%" alt="Expanded Sidebar">
-</p>
-
-<p>
-<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.34.png" width="49%" alt="Account Switcher">
-<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.44.png" width="49%" alt="Account Switched">
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.22.png" width="32%" alt="Expanded Sidebar">
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.34.png" width="32%" alt="Account Switcher">
+<img src="src/gitimgs/Screenshot%202025-12-01%20at%2019.54.44.png" width="32%" alt="Account Switched">
 </p>
 
 ## Features
