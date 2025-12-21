@@ -3048,9 +3048,25 @@ ul {
 .main-content {
   flex: 1;
   margin-left: var(--sidebar-width);
-  background: var(--bg-base) url('https://www.rapid7.com/sandwich-background.webp') center center / cover no-repeat;
+  background: var(--bg-base);
   min-height: 100vh;
   transition: margin-left var(--duration-slow) var(--ease-out);
+  position: relative;
+}
+
+.main-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/rpd7/bg.jpg') center center / cover no-repeat fixed;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main-content > * {
+  position: relative;
+  z-index: 1;
 }
 
 .content-wrapper {
