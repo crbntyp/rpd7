@@ -133,11 +133,11 @@ const Icons = {
   ),
   velociraptor: () => (
     <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      {/* T-Rex head profile */}
-      <path d="M4 11c0-3 2-6 6-6h4c3 0 5 2 6 4v2c0 1-1 2-2 2h-3l-2 2h-3c-1 0-2 1-2 2v3c0 1-1 2-2 2s-2-1-2-2v-9z"/>
-      <circle cx="15" cy="8" r="1" fill="currentColor"/>
-      <path d="M18 13l2-1"/>
-      <path d="M18 11l2 0"/>
+      {/* Simple T-Rex silhouette */}
+      <path d="M5 8h8l3 3v3h-2v4h-2v-4h-2v4h-2v-4H6v-3l-1-3z"/>
+      <path d="M13 8V6c0-1 1-2 2-2h3v2h-3v2"/>
+      <circle cx="16" cy="5" r="1" fill="currentColor"/>
+      <path d="M5 11l-2 1"/>
     </svg>
   ),
   external: () => (
