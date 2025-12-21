@@ -404,7 +404,7 @@ const DetachIcon = () => (
 // Main Sidebar Component
 export default function Sidebar() {
   const location = useLocation();
-  const { isOpen: isMobileOpen, closeSidebar } = useSidebar();
+  const { isOpen: isMobileOpen, openSidebar, closeSidebar } = useSidebar();
   const { activeAccountIndex, setActiveAccount, currentAccount, personalAccount, mdrAccounts } = useAccount();
   const { registerTourActions } = useTour();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -657,13 +657,16 @@ export default function Sidebar() {
         setIsMinimized(false);
         setIsDetached(false);
         setDropdownOpen(false);
+        // Open sidebar on mobile
+        openSidebar();
       },
       cleanupAfterTour: () => {
         // Optional cleanup after tour ends
         setDropdownOpen(false);
+        closeSidebar();
       },
     });
-  }, [registerTourActions, navSections, activeSubNav, mdrAccounts, setActiveAccount]);
+  }, [registerTourActions, navSections, activeSubNav, mdrAccounts, setActiveAccount, openSidebar, closeSidebar]);
 
   const handleAccountSwitch = (index) => {
     setActiveAccount(index);
