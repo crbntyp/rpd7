@@ -5,6 +5,8 @@
   height: 50px;
   padding: 0 16px;
   border-bottom: 1px solid var(--border-subtle);
+  position: relative;
+  z-index: 100;
 }
 
 .component-header-left {
