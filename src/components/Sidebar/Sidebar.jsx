@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useSidebar } from '../../context/SidebarContext';
 import { useAccount } from '../../context/AccountContext';
+import { useTour } from '../../context/TourContext';
 import { navSections as defaultNavSections } from '../../data/navigation';
 import './Sidebar.css';
 
@@ -214,7 +215,7 @@ const BackArrow = () => (
 );
 
 // NavItem Component - now triggers slide instead of dropdown
-function NavItem({ item, onSelect, isSelected, onMouseEnter, onMouseLeave }) {
+function NavItem({ item, onSelect, isSelected, onMouseEnter, onMouseLeave, dataTour }) {
   const location = useLocation();
   const Icon = Icons[item.icon];
 
@@ -236,6 +237,7 @@ function NavItem({ item, onSelect, isSelected, onMouseEnter, onMouseLeave }) {
         onMouseEnter={(e) => onMouseEnter?.(e, item.label)}
         onMouseLeave={onMouseLeave}
         data-tooltip={item.label}
+        data-tour={dataTour}
       >
         {Icon && <Icon />}
         <span>{item.label}</span>
@@ -285,7 +287,7 @@ function SubNavPanel({ item, onBack, isVisible, isAnimating }) {
   }, [item?.id]);
 
   return (
-    <div className={`sub-nav-panel ${isVisible ? 'visible' : ''} ${isAnimating ? 'animating' : ''}`}>
+    <div className={`sub-nav-panel ${isVisible ? 'visible' : ''} ${isAnimating ? 'animating' : ''}`} data-tour="sub-nav-panel">
       <div className="sub-nav-header">
         {item && Icon && <Icon />}
         <span className="sub-nav-title">{item?.label}</span>
@@ -314,6 +316,7 @@ function SubNavPanel({ item, onBack, isVisible, isAnimating }) {
                       <NavLink
                         key={sIdx}
                         to={sectionItem.path}
+                        end
                         className={({ isActive }) => `sub-nav-item ${isActive ? 'active' : ''}`}
                       >
                         {sectionItem.label}
@@ -335,6 +338,7 @@ function SubNavPanel({ item, onBack, isVisible, isAnimating }) {
             <NavLink
               key={idx}
               to={sub.path}
+              end
               className={({ isActive }) => `sub-nav-item ${isActive ? 'active' : ''}`}
             >
               {sub.label}
@@ -402,6 +406,7 @@ export default function Sidebar() {
   const location = useLocation();
   const { isOpen: isMobileOpen, closeSidebar } = useSidebar();
   const { activeAccountIndex, setActiveAccount, currentAccount, personalAccount, mdrAccounts } = useAccount();
+  const { registerTourActions } = useTour();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [navSections, setNavSections] = useState(getOrderedNavSections);
   const [draggedSection, setDraggedSection] = useState(null);
@@ -416,6 +421,7 @@ export default function Sidebar() {
   const [dragPosition, setDragPosition] = useState({ x: 20, y: 100 });
   const [showDropZone, setShowDropZone] = useState(false);
   const [tooltip, setTooltip] = useState({ visible: false, text: '', top: 0 });
+  const [dropdownPosition, setDropdownPosition] = useState({ bottom: 0, left: 0 });
   const dropdownRef = useRef(null);
   const profileBtnRef = useRef(null);
   const sidebarRef = useRef(null);
@@ -426,12 +432,13 @@ export default function Sidebar() {
 
   // Tooltip handlers for minimized sidebar
   const showTooltip = (e, text) => {
-    if (!isMinimized) return;
+    if (!isMinimized || isDragging) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltip({
       visible: true,
       text,
       top: rect.top + rect.height / 2,
+      left: rect.right + 12, // Position to the right of the element
     });
   };
 
@@ -439,9 +446,23 @@ export default function Sidebar() {
     setTooltip(prev => ({ ...prev, visible: false }));
   };
 
+  // Handle dropdown toggle with position calculation for minimized state
+  const handleDropdownToggle = () => {
+    if (!dropdownOpen && isMinimized && sidebarRef.current) {
+      const sidebarRect = sidebarRef.current.getBoundingClientRect();
+      // Position dropdown to the right, with bottom aligned to sidebar bottom
+      setDropdownPosition({
+        bottom: window.innerHeight - sidebarRect.bottom,
+        left: sidebarRect.right + 12,
+      });
+    }
+    setDropdownOpen(!dropdownOpen);
+  };
+
   // Detach handlers
   const handleDetachStart = (e) => {
     e.preventDefault();
+    hideTooltip(); // Hide any visible tooltip when dragging
     const rect = sidebarRef.current?.getBoundingClientRect();
     if (rect) {
       dragOffset.current = {
@@ -573,6 +594,10 @@ export default function Sidebar() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
+      // Don't close if clicking on tour elements
+      if (e.target.closest('.tour-tooltip') || e.target.closest('.tour-container')) {
+        return;
+      }
       if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
           profileBtnRef.current && !profileBtnRef.current.contains(e.target)) {
         setDropdownOpen(false);
@@ -593,6 +618,52 @@ export default function Sidebar() {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [dropdownOpen]);
+
+  // Register tour actions
+  useEffect(() => {
+    registerTourActions({
+      openSubNav: () => {
+        // Open a nav item (first section, first item with subItems)
+        const firstItemWithSubNav = navSections[0]?.items?.find(item => item.subItems?.length);
+        if (firstItemWithSubNav) {
+          setMainNavVisible(false);
+          setTimeout(() => {
+            setActiveSubNav(firstItemWithSubNav);
+            setSavedSubNav(firstItemWithSubNav);
+          }, ANIMATION_DURATION);
+        }
+      },
+      goBackToMainNav: () => {
+        if (activeSubNav) {
+          setActiveSubNav(null);
+          setMainNavVisible(true);
+        }
+      },
+      openProfileDropdown: () => {
+        setDropdownOpen(true);
+      },
+      closeProfileDropdown: () => {
+        setDropdownOpen(false);
+      },
+      selectFirstMdrAccount: () => {
+        if (mdrAccounts.length > 0) {
+          setActiveAccount(0);
+        }
+      },
+      resetSidebarForTour: () => {
+        // Reset to main nav, not minimized, not detached
+        setActiveSubNav(null);
+        setMainNavVisible(true);
+        setIsMinimized(false);
+        setIsDetached(false);
+        setDropdownOpen(false);
+      },
+      cleanupAfterTour: () => {
+        // Optional cleanup after tour ends
+        setDropdownOpen(false);
+      },
+    });
+  }, [registerTourActions, navSections, activeSubNav, mdrAccounts, setActiveAccount]);
 
   const handleAccountSwitch = (index) => {
     setActiveAccount(index);
@@ -732,6 +803,7 @@ export default function Sidebar() {
                     className="sidebar-toggle"
                     onMouseDown={handleDetachStart}
                     title="Drag to detach sidebar"
+                    data-tour="detach-btn"
                   >
                     <DetachIcon />
                   </button>
@@ -741,6 +813,7 @@ export default function Sidebar() {
                   onClick={toggleMinimize}
                   onMouseDown={(e) => e.stopPropagation()}
                   title={isMinimized ? 'Expand sidebar' : 'Minimize sidebar'}
+                  data-tour="minimize-btn"
                 >
                   {isMinimized ? <ExpandIcon /> : <MinimizeIcon />}
                 </button>
@@ -791,13 +864,14 @@ export default function Sidebar() {
                   <span
                     className="nav-section-drag-handle"
                     title="Drag to reorder"
+                    data-tour={sectionIdx === 0 ? 'drag-handle' : undefined}
                   >
                     <Icons.dragHandle />
                   </span>
                   <span className="nav-section-title">{section.title}</span>
                 </div>
                 <ul className="nav-list">
-                  {section.items.map((item) => (
+                  {section.items.map((item, itemIdx) => (
                     <NavItem
                       key={item.id}
                       item={item}
@@ -805,6 +879,7 @@ export default function Sidebar() {
                       isSelected={activeSubNav?.id === item.id || savedSubNav?.id === item.id}
                       onMouseEnter={showTooltip}
                       onMouseLeave={hideTooltip}
+                      dataTour={sectionIdx === 0 && itemIdx === 0 ? 'nav-item' : undefined}
                     />
                   ))}
                 </ul>
@@ -862,16 +937,17 @@ export default function Sidebar() {
             className="user-profile"
             aria-expanded={dropdownOpen}
             aria-haspopup="true"
-            onClick={() => setDropdownOpen(!dropdownOpen)}
+            onClick={handleDropdownToggle}
             onMouseEnter={(e) => showTooltip(e, currentAccount.name)}
             onMouseLeave={hideTooltip}
             data-tooltip={currentAccount.name}
+            data-tour="profile-btn"
           >
             <div className={`user-avatar ${currentAccount.isPersonal ? '' : 'company-logo'}`}>
               {currentAccount.isPersonal ? (
                 <img src="https://i.pravatar.cc/150?u=jpyper" alt={currentAccount.name} />
               ) : (
-                <img src={`https://logo.clearbit.com/${currentAccount.domain}`} alt={currentAccount.name} />
+                <img src={currentAccount.logo} alt={currentAccount.name} />
               )}
               <span className="online-indicator"></span>
             </div>
@@ -883,7 +959,11 @@ export default function Sidebar() {
           </button>
 
           {/* Dropdown */}
-          <div ref={dropdownRef} className={`user-dropdown ${dropdownOpen ? 'open' : ''}`}>
+          <div
+            ref={dropdownRef}
+            className={`user-dropdown ${dropdownOpen ? 'open' : ''}`}
+            style={isMinimized ? { bottom: dropdownPosition.bottom, left: dropdownPosition.left, top: 'auto' } : undefined}
+          >
             {/* Personal Account */}
             <div className="dropdown-section">
               <span className="dropdown-section-title">My Account</span>
@@ -913,9 +993,10 @@ export default function Sidebar() {
                     key={idx}
                     className={`dropdown-user ${activeAccountIndex === idx ? 'active' : ''}`}
                     onClick={() => handleAccountSwitch(idx)}
+                    data-tour={idx === 0 ? 'mdr-account' : undefined}
                   >
                     <div className="user-avatar small company-logo">
-                      <img src={`https://logo.clearbit.com/${account.domain}`} alt={account.name} />
+                      <img src={account.logo} alt={account.name} />
                     </div>
                     <div className="dropdown-user-info">
                       <span className="dropdown-user-name">{account.name}</span>
@@ -962,7 +1043,7 @@ export default function Sidebar() {
 
       {/* Tooltip for minimized sidebar */}
       {tooltip.visible && (
-        <div className="sidebar-tooltip" style={{ top: tooltip.top }}>
+        <div className="sidebar-tooltip" style={{ top: tooltip.top, left: tooltip.left }}>
           {tooltip.text}
         </div>
       )}

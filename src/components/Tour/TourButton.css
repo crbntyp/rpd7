@@ -1,0 +1,51 @@
+/* Tour Button - matches ThemeSelector styling */
+.tour-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.tour-trigger:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.tour-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tour-trigger.active {
+  background: var(--bg-hover);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.tour-trigger svg {
+  flex-shrink: 0;
+}
+
+.tour-trigger-label {
+  min-width: 28px;
+}
+
+/* Hide label on smaller screens */
+@media (max-width: 768px) {
+  .tour-trigger-label {
+    display: none;
+  }
+
+  .tour-trigger {
+    padding: 6px 8px;
+  }
+}

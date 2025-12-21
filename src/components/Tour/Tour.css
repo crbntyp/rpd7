@@ -1,0 +1,239 @@
+/* Tour Container */
+.tour-container {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+/* Overlay - click catcher behind spotlight */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  pointer-events: auto;
+  cursor: pointer;
+  /* No background - spotlight creates the dimming effect */
+}
+
+/* Spotlight - cutout effect with box-shadow overlay */
+.tour-spotlight {
+  position: fixed;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
+  background: transparent;
+  z-index: 10002;
+  pointer-events: auto;
+  transition: all 0.3s ease;
+}
+
+/* Tooltip */
+.tour-tooltip {
+  position: fixed;
+  width: 320px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: 10003;
+  pointer-events: auto;
+  animation: tourTooltipIn 0.25s ease-out;
+}
+
+@keyframes tourTooltipIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Arrow styles */
+.tour-tooltip::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  transform: rotate(45deg);
+}
+
+.tour-arrow-left::before {
+  left: -7px;
+  top: 50%;
+  margin-top: -6px;
+  border-right: none;
+  border-top: none;
+}
+
+.tour-arrow-right::before {
+  right: -7px;
+  top: 50%;
+  margin-top: -6px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.tour-arrow-top::before {
+  top: -7px;
+  left: 50%;
+  margin-left: -6px;
+  border-bottom: none;
+  border-right: none;
+}
+
+.tour-arrow-top-end::before {
+  top: -7px;
+  right: 24px;
+  border-bottom: none;
+  border-right: none;
+}
+
+.tour-arrow-bottom::before {
+  bottom: -7px;
+  left: 50%;
+  margin-left: -6px;
+  border-top: none;
+  border-left: none;
+}
+
+/* Progress indicator */
+.tour-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tour-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.tour-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bg-active);
+  transition: all 0.2s ease;
+}
+
+.tour-dot.active {
+  background: var(--accent-primary);
+  transform: scale(1.2);
+}
+
+.tour-dot.completed {
+  background: var(--accent-primary);
+  opacity: 0.5;
+}
+
+.tour-step-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Content */
+.tour-content {
+  padding: 16px;
+}
+
+.tour-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.tour-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Actions */
+.tour-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-base);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.tour-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.tour-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  border: none;
+}
+
+.tour-btn-skip {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.tour-btn-skip:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.tour-btn-back {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}
+
+.tour-btn-back:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.tour-btn-next {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.tour-btn-next:hover {
+  opacity: 0.9;
+}
+
+/* Force visibility of tour-highlighted elements only when tour is active */
+.tour-active [data-tour="drag-handle"] {
+  opacity: 1 !important;
+  background: var(--bg-hover);
+}
+
+/* Raise dropdown z-index during tour so it's visible above overlay */
+.tour-active .user-dropdown.open {
+  z-index: 10002;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .tour-tooltip {
+    width: calc(100vw - 32px);
+    left: 16px !important;
+    right: 16px;
+  }
+
+  .tour-tooltip::before {
+    display: none;
+  }
+}

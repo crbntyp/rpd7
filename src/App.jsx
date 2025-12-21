@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import { Tour } from './components/Tour';
 import HomePage from './pages/HomePage';
 import CommandHome from './pages/CommandHome';
 import AgentsPage from './pages/AgentsPage';
@@ -13,6 +14,7 @@ function AppLayout({ children }) {
       <main className="main-content">
         {children}
       </main>
+      <Tour />
     </div>
   );
 }

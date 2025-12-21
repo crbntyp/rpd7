@@ -1812,9 +1812,29 @@ ul {
 .sidebar.minimized .nav-chevron,
 .sidebar.minimized .external-icon,
 .sidebar.minimized .user-info,
-.sidebar.minimized .user-dropdown,
 .sidebar.minimized .user-profile .chevron-icon {
   display: none;
+}
+
+/* Minimized sidebar - dropdown pops out to the side */
+.sidebar.minimized .user-dropdown {
+  position: fixed;
+  bottom: auto;
+  right: auto;
+  width: 280px;
+  transform-origin: bottom left;
+}
+
+.sidebar.minimized .user-dropdown.open {
+  transform: translateY(0) scale(1);
+}
+
+.sidebar.minimized .sidebar-footer {
+  position: relative;
+}
+
+.sidebar.minimized .user-profile {
+  position: relative;
 }
 
 .sidebar.minimized .nav-container,
@@ -1964,7 +1984,6 @@ ul {
 /* JS-powered tooltip for minimized sidebar */
 .sidebar-tooltip {
   position: fixed;
-  left: 72px;
   background: var(--bg-elevated);
   color: var(--text-primary);
   padding: 8px 12px;
@@ -1985,14 +2004,19 @@ ul {
   z-index: 1100;
 }
 
-/* Detached expanded - overflow visible for tooltips */
-.sidebar.detached:not(.minimized) .nav-container,
+/* Detached expanded - overflow visible for tooltips (but keep nav-container scrollable) */
 .sidebar.detached:not(.minimized) .nav-section,
 .sidebar.detached:not(.minimized) .nav-list,
 .sidebar.detached:not(.minimized) .nav-item-parent,
 .sidebar.detached:not(.minimized) .sidebar-footer,
 .sidebar.detached:not(.minimized) .sidebar-footer-links {
   overflow: visible;
+}
+
+/* Detached expanded - keep nav-container scrollable */
+.sidebar.detached:not(.minimized) .nav-container {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Detached minimized - proper scrolling for icon list */

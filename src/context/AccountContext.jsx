@@ -12,14 +12,16 @@ const personalAccount = {
   isPersonal: true,
 };
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 const mdrAccounts = [
-  { name: 'Evri', domain: 'evri.com' },
-  { name: 'Capital on Tap', domain: 'capitalontap.com' },
-  { name: 'Deliveroo', domain: 'deliveroo.com' },
-  { name: 'Monzo', domain: 'monzo.com' },
-  { name: 'Revolut', domain: 'revolut.com' },
-  { name: 'Just Eat', domain: 'just-eat.com' },
-  { name: 'Trainline', domain: 'trainline.com' },
+  { name: 'Evri', domain: 'evri.com', logo: `${BASE_URL}logos/evri.png` },
+  { name: 'Capital on Tap', domain: 'capitalontap.com', logo: `${BASE_URL}logos/capitalontap.png` },
+  { name: 'Deliveroo', domain: 'deliveroo.com', logo: `${BASE_URL}logos/deliveroo.png` },
+  { name: 'Monzo', domain: 'monzo.com', logo: `${BASE_URL}logos/monzo.png` },
+  { name: 'Revolut', domain: 'revolut.com', logo: `${BASE_URL}logos/revolut.png` },
+  { name: 'Just Eat', domain: 'just-eat.com', logo: `${BASE_URL}logos/just-eat.png` },
+  { name: 'Trainline', domain: 'trainline.com', logo: `${BASE_URL}logos/trainline.png` },
 ];
 
 export function AccountProvider({ children }) {

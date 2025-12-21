@@ -3,6 +3,7 @@ import { useSidebar } from '../../context/SidebarContext';
 import { useAccount } from '../../context/AccountContext';
 import { findNavContext } from '../../data/navigation';
 import ThemeSelector from '../ThemeSelector';
+import { TourButton } from '../Tour';
 import './ComponentHeader.css';
 
 // Burger menu icon
@@ -37,9 +38,9 @@ function ComponentHeader({ actions = [], showThemeSelector = true }) {
         {!currentAccount.isPersonal && (
           <>
             <span className="component-header-divider">|</span>
-            <div className="component-header-account">
+            <div className="component-header-account" data-tour="header-account">
               <img
-                src={`https://logo.clearbit.com/${currentAccount.domain}`}
+                src={currentAccount.logo}
                 alt={currentAccount.name}
                 className="component-header-account-logo"
               />
@@ -60,7 +61,12 @@ function ComponentHeader({ actions = [], showThemeSelector = true }) {
             {action.icon}
           </button>
         ))}
-        {showThemeSelector && <ThemeSelector />}
+        <TourButton />
+        {showThemeSelector && (
+          <div data-tour="theme-selector">
+            <ThemeSelector />
+          </div>
+        )}
       </div>
     </header>
   );
