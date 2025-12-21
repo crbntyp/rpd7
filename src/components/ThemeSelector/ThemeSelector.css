@@ -42,16 +42,14 @@
 }
 
 .theme-selector-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
+  position: fixed;
   min-width: 120px;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   padding: 4px;
-  z-index: 1000;
+  z-index: 10000;
   animation: dropdownFadeIn 0.15s ease-out;
 }
 

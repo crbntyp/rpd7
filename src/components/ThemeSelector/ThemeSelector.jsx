@@ -148,7 +148,9 @@ const themes = [
 export default function ThemeSelector() {
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const dropdownRef = useRef(null);
+  const triggerRef = useRef(null);
 
   const currentTheme = themes.find(t => t.id === theme) || themes[0];
   const CurrentIcon = currentTheme.icon;
@@ -169,11 +171,23 @@ export default function ThemeSelector() {
     setIsOpen(false);
   };
 
+  const handleToggle = () => {
+    if (!isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div className="theme-selector" ref={dropdownRef}>
       <button
+        ref={triggerRef}
         className={`theme-selector-trigger ${isOpen ? 'open' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         title="Select theme"
       >
         <CurrentIcon />
@@ -182,7 +196,10 @@ export default function ThemeSelector() {
       </button>
 
       {isOpen && (
-        <div className="theme-selector-dropdown">
+        <div
+          className="theme-selector-dropdown"
+          style={{ top: dropdownPosition.top, right: dropdownPosition.right }}
+        >
           {themes.map((t) => {
             const Icon = t.icon;
             const isActive = t.id === theme;
