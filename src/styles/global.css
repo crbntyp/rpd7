@@ -3092,7 +3092,7 @@ ul {
   left: var(--sidebar-width);
   right: 0;
   bottom: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   overflow: hidden;
 }
@@ -3142,7 +3142,7 @@ ul {
   width: 1px;
   height: 100px;
   background: linear-gradient(180deg, transparent, rgba(255, 108, 55, 0.4), transparent);
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
   animation: streamDown 3s linear infinite;
 }
