@@ -132,10 +132,10 @@ const Icons = {
     </svg>
   ),
   velociraptor: () => (
-    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-      {/* T-Rex silhouette - side profile */}
-      <path d="M6 20v-3l1-2v-3l-2-1v-2l3-1 2-3h3l1-1h2l1 1v2l-1 1v1l2 1v2l-2 2v2h-1v3h-2v-3h-1v3h-2v-3H8v3H6z"/>
-      <path d="M15 6l2-1 2 1-1 1h-2l-1-1z"/>
+    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <polyline points="7 10 10 13 7 16"/>
+      <line x1="13" y1="16" x2="17" y2="16"/>
     </svg>
   ),
   external: () => (
