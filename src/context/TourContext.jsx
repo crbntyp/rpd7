@@ -168,9 +168,11 @@ export function TourProvider({ children }) {
       case 'header-account':
         executeAction('selectFirstMdrAccount');
         setTimeout(() => executeAction('closeProfileDropdown'), 300);
+        // Close mobile sidebar to show header elements
+        executeAction('closeMobileSidebar');
         break;
       case 'theme-selector':
-        // No action needed
+        // No action needed - sidebar already closed from previous step
         break;
       default:
         break;

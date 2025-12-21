@@ -660,6 +660,9 @@ export default function Sidebar() {
         // Open sidebar on mobile
         openSidebar();
       },
+      closeMobileSidebar: () => {
+        closeSidebar();
+      },
       cleanupAfterTour: () => {
         // Optional cleanup after tour ends
         setDropdownOpen(false);
