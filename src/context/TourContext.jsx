@@ -1,9 +1,11 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 
 const TourContext = createContext();
 
-// Tour step definitions
-export const TOUR_STEPS = [
+const MOBILE_BREAKPOINT = 1024;
+
+// Tour step definitions - desktopOnly steps are skipped on mobile
+const ALL_TOUR_STEPS = [
   {
     id: 'nav-item',
     target: '[data-tour="nav-item"]',
@@ -31,6 +33,7 @@ export const TOUR_STEPS = [
     title: 'Minimize Sidebar',
     description: 'Collapse the sidebar to icons for more screen space.',
     position: 'right',
+    desktopOnly: true,
   },
   {
     id: 'detach-btn',
@@ -38,6 +41,7 @@ export const TOUR_STEPS = [
     title: 'Detach Sidebar',
     description: 'Drag to detach the sidebar and position it anywhere on screen.',
     position: 'right',
+    desktopOnly: true,
   },
   {
     id: 'profile-btn',
@@ -69,10 +73,31 @@ export const TOUR_STEPS = [
   },
 ];
 
+// Export filtered steps for external use
+export const TOUR_STEPS = ALL_TOUR_STEPS;
+
 export function TourProvider({ children }) {
   const [isTourActive, setIsTourActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= MOBILE_BREAKPOINT);
   const actionsRef = useRef({});
+
+  // Track window resize to update mobile state
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= MOBILE_BREAKPOINT);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Filter steps based on device - skip desktopOnly steps on mobile
+  const tourSteps = useMemo(() => {
+    if (isMobile) {
+      return ALL_TOUR_STEPS.filter(step => !step.desktopOnly);
+    }
+    return ALL_TOUR_STEPS;
+  }, [isMobile]);
 
   // Register actions that can be triggered by the tour
   const registerTourActions = useCallback((actions) => {
@@ -103,13 +128,13 @@ export function TourProvider({ children }) {
 
   const nextStep = useCallback(() => {
     const nextIndex = currentStep + 1;
-    if (nextIndex >= TOUR_STEPS.length) {
+    if (nextIndex >= tourSteps.length) {
       endTour();
       return;
     }
 
     // Execute before-step action for the next step
-    const nextStepId = TOUR_STEPS[nextIndex].id;
+    const nextStepId = tourSteps[nextIndex].id;
 
     // Auto-progress actions
     switch (nextStepId) {
@@ -125,6 +150,13 @@ export function TourProvider({ children }) {
         return;
       case 'profile-btn':
         executeAction('goBackToMainNav');
+        // Scroll profile into view on mobile
+        setTimeout(() => {
+          const profileBtn = document.querySelector('[data-tour="profile-btn"]');
+          if (profileBtn) {
+            profileBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
         break;
       case 'mdr-account':
         executeAction('openProfileDropdown');
@@ -143,15 +175,15 @@ export function TourProvider({ children }) {
     }
 
     setCurrentStep(nextIndex);
-  }, [currentStep, endTour, executeAction]);
+  }, [currentStep, tourSteps, endTour, executeAction]);
 
   const prevStep = useCallback(() => {
     const prevIndex = currentStep - 1;
     if (prevIndex < 0) return;
 
     // Handle reverse navigation
-    const currentStepId = TOUR_STEPS[currentStep].id;
-    const prevStepId = TOUR_STEPS[prevIndex].id;
+    const currentStepId = tourSteps[currentStep].id;
+    const prevStepId = tourSteps[prevIndex].id;
 
     switch (currentStepId) {
       case 'sub-nav-panel':
@@ -168,15 +200,15 @@ export function TourProvider({ children }) {
     }
 
     setCurrentStep(prevIndex);
-  }, [currentStep, executeAction]);
+  }, [currentStep, tourSteps, executeAction]);
 
   const goToStep = useCallback((stepIndex) => {
-    if (stepIndex >= 0 && stepIndex < TOUR_STEPS.length) {
+    if (stepIndex >= 0 && stepIndex < tourSteps.length) {
       setCurrentStep(stepIndex);
     }
-  }, []);
+  }, [tourSteps]);
 
-  const currentStepData = TOUR_STEPS[currentStep];
+  const currentStepData = tourSteps[currentStep];
 
   return (
     <TourContext.Provider
@@ -184,7 +216,8 @@ export function TourProvider({ children }) {
         isTourActive,
         currentStep,
         currentStepData,
-        totalSteps: TOUR_STEPS.length,
+        totalSteps: tourSteps.length,
+        tourSteps,
         startTour,
         endTour,
         nextStep,

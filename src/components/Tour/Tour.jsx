@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTour, TOUR_STEPS } from '../../context/TourContext';
+import { useTour } from '../../context/TourContext';
 import './Tour.css';
 
 // Calculate tooltip position relative to target element
@@ -64,6 +64,7 @@ export default function Tour() {
     currentStep,
     currentStepData,
     totalSteps,
+    tourSteps,
     nextStep,
     prevStep,
     endTour,
@@ -180,7 +181,7 @@ export default function Tour() {
         {/* Progress indicator */}
         <div className="tour-progress">
           <div className="tour-dots">
-            {TOUR_STEPS.map((_, index) => (
+            {tourSteps.map((_, index) => (
               <span
                 key={index}
                 className={`tour-dot ${index === currentStep ? 'active' : ''} ${index < currentStep ? 'completed' : ''}`}
