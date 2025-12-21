@@ -15,7 +15,6 @@ function AppLayout({ children }) {
         {children}
       </main>
       {/* Cyber security effects */}
-      <div className="cyber-scan" />
       <div className="cyber-particles">
         <div className="cyber-particle" />
         <div className="cyber-particle" />
