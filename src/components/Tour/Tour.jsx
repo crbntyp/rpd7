@@ -175,7 +175,7 @@ export default function Tour() {
 
       {/* Tooltip */}
       <div
-        className={`tour-tooltip tour-arrow-${arrowPosition}`}
+        className={`tour-tooltip tour-arrow-${arrowPosition}${currentStepData.mobilePosition ? ` tour-mobile-${currentStepData.mobilePosition}` : ''}`}
         style={tooltipStyle}
       >
         {/* Progress indicator */}

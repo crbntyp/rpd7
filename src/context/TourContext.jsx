@@ -49,6 +49,7 @@ const ALL_TOUR_STEPS = [
     title: 'Account Switcher',
     description: 'Click to switch between your personal and company accounts.',
     position: 'right',
+    mobilePosition: 'top', // Show tooltip at top on mobile since target is at bottom
   },
   {
     id: 'mdr-account',
@@ -56,6 +57,7 @@ const ALL_TOUR_STEPS = [
     title: 'MDR Accounts',
     description: 'Select a company account to view their security data.',
     position: 'right',
+    mobilePosition: 'top',
   },
   {
     id: 'header-account',

@@ -239,10 +239,29 @@
     animation: tourTooltipSlideUp 0.25s ease-out;
   }
 
+  /* Top position variant for steps where target is at bottom */
+  .tour-tooltip.tour-mobile-top {
+    bottom: auto !important;
+    top: 0 !important;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    animation: tourTooltipSlideDown 0.25s ease-out;
+  }
+
   @keyframes tourTooltipSlideUp {
     from {
       opacity: 0;
       transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes tourTooltipSlideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
     }
     to {
       opacity: 1;
