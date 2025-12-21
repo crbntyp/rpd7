@@ -106,6 +106,7 @@ export default function App() {
           <Route path="/collectors/parsing" element={<PlaceholderPage title="Parsing Rules" />} />
 
           {/* Footer Links */}
+          <Route path="/velociraptor" element={<PlaceholderPage title="Velociraptor" />} />
           <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
           <Route path="/docs" element={<PlaceholderPage title="API Documentation" />} />
 

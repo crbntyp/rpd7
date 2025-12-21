@@ -131,6 +131,13 @@ const Icons = {
       <polyline points="10 9 9 9 8 9"/>
     </svg>
   ),
+  velociraptor: () => (
+    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2"/>
+      <polyline points="7 10 10 13 7 16"/>
+      <line x1="13" y1="16" x2="17" y2="16"/>
+    </svg>
+  ),
   external: () => (
     <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -906,6 +913,7 @@ export default function Sidebar() {
         <div className="sidebar-footer-links">
           <NavLink
             to="/"
+            end
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             data-tooltip="Platform Home"
             onMouseEnter={(e) => showTooltip(e, 'Platform Home')}
@@ -913,6 +921,16 @@ export default function Sidebar() {
           >
             <Icons.home />
             <span>Platform Home</span>
+          </NavLink>
+          <NavLink
+            to="/velociraptor"
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            data-tooltip="Velociraptor"
+            onMouseEnter={(e) => showTooltip(e, 'Velociraptor')}
+            onMouseLeave={hideTooltip}
+          >
+            <Icons.velociraptor />
+            <span>Velociraptor</span>
           </NavLink>
           <NavLink
             to="/settings"
