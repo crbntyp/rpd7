@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTheme } from '../../context/ThemeContext';
 import './ThemeSelector.css';
 
@@ -157,7 +158,10 @@ export default function ThemeSelector() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      // Check if click is outside both trigger and dropdown
+      const isOutsideTrigger = triggerRef.current && !triggerRef.current.contains(event.target);
+      const isOutsideDropdown = dropdownRef.current && !dropdownRef.current.contains(event.target);
+      if (isOutsideTrigger && isOutsideDropdown) {
         setIsOpen(false);
       }
     };
@@ -183,7 +187,7 @@ export default function ThemeSelector() {
   };
 
   return (
-    <div className="theme-selector" ref={dropdownRef}>
+    <div className="theme-selector">
       <button
         ref={triggerRef}
         className={`theme-selector-trigger ${isOpen ? 'open' : ''}`}
@@ -195,8 +199,9 @@ export default function ThemeSelector() {
         <ChevronDownIcon />
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <div
+          ref={dropdownRef}
           className="theme-selector-dropdown"
           style={{ top: dropdownPosition.top, right: dropdownPosition.right }}
         >
@@ -215,7 +220,8 @@ export default function ThemeSelector() {
               </button>
             );
           })}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
