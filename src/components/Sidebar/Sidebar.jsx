@@ -132,12 +132,10 @@ const Icons = {
     </svg>
   ),
   velociraptor: () => (
-    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      {/* Simple T-Rex silhouette */}
-      <path d="M5 8h8l3 3v3h-2v4h-2v-4h-2v4h-2v-4H6v-3l-1-3z"/>
-      <path d="M13 8V6c0-1 1-2 2-2h3v2h-3v2"/>
-      <circle cx="16" cy="5" r="1" fill="currentColor"/>
-      <path d="M5 11l-2 1"/>
+    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      {/* T-Rex silhouette - side profile */}
+      <path d="M6 20v-3l1-2v-3l-2-1v-2l3-1 2-3h3l1-1h2l1 1v2l-1 1v1l2 1v2l-2 2v2h-1v3h-2v-3h-1v3h-2v-3H8v3H6z"/>
+      <path d="M15 6l2-1 2 1-1 1h-2l-1-1z"/>
     </svg>
   ),
   external: () => (
@@ -927,12 +925,12 @@ export default function Sidebar() {
           <NavLink
             to="/velociraptor"
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-            data-tooltip="Velociraptor"
-            onMouseEnter={(e) => showTooltip(e, 'Velociraptor')}
+            data-tooltip="Hosted Velociraptor"
+            onMouseEnter={(e) => showTooltip(e, 'Hosted Velociraptor')}
             onMouseLeave={hideTooltip}
           >
             <Icons.velociraptor />
-            <span>Velociraptor</span>
+            <span>Hosted Velociraptor</span>
           </NavLink>
           <NavLink
             to="/settings"
