@@ -985,7 +985,7 @@ export default function Sidebar() {
             </div>
             <div className="dropdown-divider"></div>
             {/* MDR Accounts */}
-            <div className="dropdown-section dropdown-section-scrollable">
+            <div className="dropdown-section dropdown-section-scrollable" data-tour="mdr-accounts-section">
               <span className="dropdown-section-title">MDR Accounts</span>
               <div className="dropdown-section-scroll">
                 {mdrAccounts.map((account, idx) => (

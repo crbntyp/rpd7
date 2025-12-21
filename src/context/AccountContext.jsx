@@ -14,14 +14,16 @@ const personalAccount = {
 
 const BASE_URL = import.meta.env.BASE_URL;
 
+// Real Rapid7 customers from https://www.rapid7.com/customers/
 const mdrAccounts = [
   { name: 'Evri', domain: 'evri.com', logo: `${BASE_URL}logos/evri.png` },
+  { name: 'Arcadis', domain: 'arcadis.com', logo: `${BASE_URL}logos/arcadis.png` },
+  { name: 'Zoopla', domain: 'zoopla.co.uk', logo: `${BASE_URL}logos/zoopla.png` },
+  { name: 'Wyndham Hotels', domain: 'wyndhamhotels.com', logo: `${BASE_URL}logos/wyndham.png` },
+  { name: 'Paddle', domain: 'paddle.com', logo: `${BASE_URL}logos/paddle.png` },
+  { name: 'Keyloop', domain: 'keyloop.com', logo: `${BASE_URL}logos/keyloop.png` },
+  { name: 'Visier', domain: 'visier.com', logo: `${BASE_URL}logos/visier.png` },
   { name: 'Capital on Tap', domain: 'capitalontap.com', logo: `${BASE_URL}logos/capitalontap.png` },
-  { name: 'Deliveroo', domain: 'deliveroo.com', logo: `${BASE_URL}logos/deliveroo.png` },
-  { name: 'Monzo', domain: 'monzo.com', logo: `${BASE_URL}logos/monzo.png` },
-  { name: 'Revolut', domain: 'revolut.com', logo: `${BASE_URL}logos/revolut.png` },
-  { name: 'Just Eat', domain: 'just-eat.com', logo: `${BASE_URL}logos/just-eat.png` },
-  { name: 'Trainline', domain: 'trainline.com', logo: `${BASE_URL}logos/trainline.png` },
 ];
 
 export function AccountProvider({ children }) {

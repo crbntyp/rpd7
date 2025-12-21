@@ -48,7 +48,7 @@ export const TOUR_STEPS = [
   },
   {
     id: 'mdr-account',
-    target: '[data-tour="mdr-account"]',
+    target: '[data-tour="mdr-accounts-section"]',
     title: 'MDR Accounts',
     description: 'Select a company account to view their security data.',
     position: 'right',
