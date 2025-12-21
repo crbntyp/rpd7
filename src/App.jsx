@@ -14,23 +14,6 @@ function AppLayout({ children }) {
       <main className="main-content">
         {children}
       </main>
-      {/* Cyber security effects */}
-      <div className="cyber-particles">
-        <div className="cyber-particle" />
-        <div className="cyber-particle" />
-        <div className="cyber-particle" />
-        <div className="cyber-particle" />
-        <div className="cyber-particle" />
-        <div className="cyber-particle" />
-        <div className="cyber-particle" />
-        <div className="cyber-particle" />
-      </div>
-      <div className="cyber-stream" />
-      <div className="cyber-stream" />
-      <div className="cyber-stream" />
-      <div className="cyber-stream" />
-      <div className="cyber-stream" />
-      <div className="cyber-stream" />
       <Tour />
     </div>
   );
