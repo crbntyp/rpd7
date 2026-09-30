@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import { Tour } from './components/Tour';
@@ -5,9 +6,13 @@ import HomePage from './pages/HomePage';
 import CommandHome from './pages/CommandHome';
 import AgentsPage from './pages/AgentsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
+import { startSmoothScroll } from './lib/motion';
 import './styles/global.css';
 
 function AppLayout({ children }) {
+  // Smooth scrolling for the page; the sidebar opts out (data-lenis-prevent).
+  useEffect(() => startSmoothScroll(), []);
+
   return (
     <div className="app-layout">
       <Sidebar />

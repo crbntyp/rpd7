@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { cascade, EASE, gsap, reducedMotion, SplitText, useGSAP } from '../../lib/motion';
 import './PageHeader.css';
 
 const ChevronDownIcon = () => (
@@ -53,11 +54,35 @@ function Dropdown({ label, icon, items }) {
 }
 
 export default function PageHeader({ title, description, actions, dropdown }) {
+  /*
+   * Where the navigation lands you. The title's words rise out of their line,
+   * the description and actions follow — the same page arriving each time you
+   * pick something from the rail (lib/motion).
+   *
+   * Placeholder routes all render this same component, so moving between them
+   * changes the title without remounting anything; the effect keys on the
+   * title, and so does the h1 (below).
+   */
+  const headerRef = useRef(null);
+  useGSAP(() => {
+    if (reducedMotion()) return;
+    const h1 = headerRef.current?.querySelector('h1');
+    if (!h1) return;
+    const split = SplitText.create(h1, { type: 'words,lines', mask: 'lines' });
+    const tl = gsap.timeline({ defaults: { ease: EASE }, onComplete: () => split.revert() });
+    tl.from(split.words, { yPercent: 115, duration: 0.9, stagger: 0.045 }, 0);
+    const rest = cascade(headerRef.current.querySelectorAll('.page-header-title p, .page-header-actions > *'), { y: 10, stagger: 0.05, duration: 0.7 });
+    if (rest) tl.add(rest, 0.15);
+  }, { scope: headerRef, dependencies: [title], revertOnUpdate: true });
+
   return (
-    <header className="page-header">
+    <header className="page-header" ref={headerRef}>
       <div className="page-header-content">
         <div className="page-header-title">
-          <h1>{title}</h1>
+          {/* Keyed by the title: the split rewrites this node's text, and
+              React would otherwise keep updating a text node that has been
+              replaced, leaving the old title on screen. */}
+          <h1 key={title}>{title}</h1>
           {description && <p>{description}</p>}
         </div>
         <div className="page-header-actions">

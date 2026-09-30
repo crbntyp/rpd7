@@ -3298,65 +3298,12 @@ ul {
    Animations
    ============================================ */
 
-/* Staggered nav item entrance */
-.nav-item {
-  opacity: 0;
-  transform: translateX(-8px);
-  animation: slideIn var(--duration-slow) var(--ease-out) forwards;
-}
-
-@keyframes slideIn {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.nav-section:nth-child(1) .nav-item:nth-child(1) { animation-delay: 50ms; }
-.nav-section:nth-child(1) .nav-item:nth-child(2) { animation-delay: 80ms; }
-.nav-section:nth-child(1) .nav-item:nth-child(3) { animation-delay: 110ms; }
-.nav-section:nth-child(1) .nav-item:nth-child(4) { animation-delay: 140ms; }
-.nav-section:nth-child(1) .nav-item:nth-child(5) { animation-delay: 170ms; }
-.nav-section:nth-child(1) .nav-item:nth-child(6) { animation-delay: 200ms; }
-
-.nav-section:nth-child(2) .nav-item:nth-child(1) { animation-delay: 230ms; }
-.nav-section:nth-child(2) .nav-item:nth-child(2) { animation-delay: 260ms; }
-.nav-section:nth-child(2) .nav-item:nth-child(3) { animation-delay: 290ms; }
-.nav-section:nth-child(2) .nav-item:nth-child(4) { animation-delay: 320ms; }
-.nav-section:nth-child(2) .nav-item:nth-child(5) { animation-delay: 350ms; }
-
-.sidebar-footer-links .nav-item:nth-child(1) { animation-delay: 380ms; }
-.sidebar-footer-links .nav-item:nth-child(2) { animation-delay: 410ms; }
-.sidebar-footer-links .nav-item:nth-child(3) { animation-delay: 440ms; }
-
-/* User profile entrance */
-.user-profile {
-  opacity: 0;
-  transform: translateY(8px);
-  animation: fadeUp var(--duration-slow) var(--ease-out) forwards;
-  animation-delay: 500ms;
-}
-
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Logo entrance */
-.logo-svg {
-  opacity: 0;
-  transform: translateX(-8px);
-  animation: logoIn var(--duration-slow) var(--ease-out) forwards;
-}
-
-@keyframes logoIn {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
+/*
+ * The sidebar's entrance — logo, nav cascade, footer links, profile — is GSAP's
+ * now (lib/motion, used in Sidebar.jsx). It was CSS keyframes with
+ * animation-fill-mode: forwards, which holds each item's transform for good
+ * and would have overridden every later animation of the same elements.
+ */
 
 /* ============================================
    Responsive

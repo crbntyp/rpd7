@@ -4,6 +4,7 @@ import { useSidebar } from '../../context/SidebarContext';
 import { useAccount } from '../../context/AccountContext';
 import { useTour } from '../../context/TourContext';
 import { navSections as defaultNavSections } from '../../data/navigation';
+import { cascade, EASE, gsap, reducedMotion, useGSAP } from '../../lib/motion';
 import './Sidebar.css';
 
 const NAV_SECTIONS_ORDER_KEY = 'crbntyp-nav-sections-order';
@@ -259,10 +260,19 @@ function SubNavPanel({ item, onBack, isVisible, isAnimating }) {
   const location = useLocation();
   const Icon = Icons[item?.icon];
   const [openSections, setOpenSections] = useState({});
+  const panelRef = useRef(null);
+  const { contextSafe } = useGSAP({ scope: panelRef });
 
-  const toggleSection = (label) => {
+  // Opening a section lets its links drop into place one after another as the
+  // section's height eases open, instead of the whole block being revealed
+  // like a blind going up.
+  const toggleSection = contextSafe((label, e) => {
+    const opening = !openSections[label];
     setOpenSections(prev => ({ ...prev, [label]: !prev[label] }));
-  };
+    if (opening && e) {
+      cascade(e.currentTarget.closest('.sub-nav-section')?.querySelectorAll('.sub-nav-item'), { y: -6, stagger: 0.03, delay: 0.05, duration: 0.5 });
+    }
+  });
 
   // Find which section contains the active path
   const findActiveSectionLabel = () => {
@@ -294,7 +304,7 @@ function SubNavPanel({ item, onBack, isVisible, isAnimating }) {
   }, [item?.id]);
 
   return (
-    <div className={`sub-nav-panel ${isVisible ? 'visible' : ''} ${isAnimating ? 'animating' : ''}`} data-tour="sub-nav-panel">
+    <div ref={panelRef} className={`sub-nav-panel ${isVisible ? 'visible' : ''} ${isAnimating ? 'animating' : ''}`} data-tour="sub-nav-panel">
       <div className="sub-nav-header">
         {item && Icon && <Icon />}
         <span className="sub-nav-title">{item?.label}</span>
@@ -311,7 +321,7 @@ function SubNavPanel({ item, onBack, isVisible, isAnimating }) {
               <div key={idx} className={`sub-nav-section ${isOpen ? 'open' : ''}`}>
                 <button
                   className="sub-nav-section-toggle"
-                  onClick={() => toggleSection(sub.label)}
+                  onClick={(e) => toggleSection(sub.label, e)}
                   aria-expanded={isOpen}
                 >
                   <span>{sub.label}</span>
@@ -760,6 +770,49 @@ export default function Sidebar() {
     setDragOverSection(null);
   };
 
+  /*
+   * Motion (lib/motion).
+   *
+   * On load the mark slides in and the navigation cascades down the rail —
+   * this replaces the CSS keyframe entrance, whose forwards fill would have
+   * pinned every item's transform and made it impossible to move them again.
+   *
+   * Drilling into a section: the CSS still slides the panel (that timing is
+   * what the tour and handleNavSelect's timeouts are built on), and GSAP makes
+   * its contents trail in behind it a beat apart, so the move reads as going
+   * somewhere rather than a list being swapped. Coming back does the same for
+   * the main rail.
+   */
+  useGSAP(() => {
+    if (reducedMotion()) return;
+    const q = gsap.utils.selector(sidebarRef);
+    const tl = gsap.timeline({ defaults: { ease: EASE } });
+    // cascade() returns null for an empty selection; a timeline would throw on it.
+    const at = (tween, position) => tween && tl.add(tween, position);
+    at(cascade(q('.logo-svg'), { x: -14, duration: 0.8 }), 0);
+    at(cascade(q('.main-nav .nav-section-title, .main-nav .nav-item'), { x: -16, stagger: 0.028, duration: 0.7 }), 0.08);
+    at(cascade(q('.sidebar-footer-links .nav-item'), { x: -16, stagger: 0.04, duration: 0.7 }), 0.45);
+    at(cascade(q('.user-profile'), { y: 10, duration: 0.7 }), 0.55);
+  }, { scope: sidebarRef });
+
+  const drilledIn = useRef(false);
+  useGSAP(() => {
+    const q = gsap.utils.selector(sidebarRef);
+    if (activeSubNav) {
+      drilledIn.current = true;
+      cascade(q('.sub-nav-header, .sub-nav-list > *'), { x: -24, stagger: 0.035, duration: 0.7 });
+    } else if (drilledIn.current && mainNavVisible) {
+      drilledIn.current = false;
+      cascade(q('.main-nav .nav-section-title, .main-nav .nav-item'), { x: -24, stagger: 0.02, duration: 0.7 });
+    }
+  }, { scope: sidebarRef, dependencies: [activeSubNav?.id, mainNavVisible] });
+
+  // The account menu's groups settle in order as it opens.
+  useGSAP(() => {
+    if (!dropdownOpen) return;
+    cascade(gsap.utils.selector(dropdownRef)('.dropdown-section, .dropdown-footer'), { y: 8, stagger: 0.04, duration: 0.5 });
+  }, { dependencies: [dropdownOpen] });
+
   const sidebarClasses = [
     'sidebar',
     isMinimized ? 'minimized' : '',
@@ -794,10 +847,13 @@ export default function Sidebar() {
       {/* Drop zone indicator */}
       <div className={`sidebar-drop-zone ${showDropZone ? 'visible' : ''}`} />
 
+      {/* data-lenis-prevent: the rail scrolls itself, so a wheel over it
+          must reach it rather than being smoothed into a page scroll. */}
       <aside
         ref={sidebarRef}
         className={sidebarClasses}
         style={sidebarStyle}
+        data-lenis-prevent
       >
         <div className="sidebar-content">
           {/* Header */}
