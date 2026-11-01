@@ -8,6 +8,9 @@ import AgentsPage from './pages/AgentsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import { startSmoothScroll } from './lib/motion';
 import './styles/global.css';
+// The nav's base styles (MOS). After global.css: same cascade order as when
+// they were part of it (see the Sidebar section there).
+import '@mos/components/Sidebar/Sidebar.css';
 
 function AppLayout({ children }) {
   // Smooth scrolling for the page; the sidebar opts out (data-lenis-prevent).

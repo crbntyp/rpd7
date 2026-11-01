@@ -1,38 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { useSidebar } from '../../context/SidebarContext';
+import { useEffect, useRef } from 'react';
+import { Sidebar as MosSidebar, sidebarMotion, useSidebar } from '@mos/components/Sidebar';
 import { useAccount } from '../../context/AccountContext';
 import { useTour } from '../../context/TourContext';
 import { navSections as defaultNavSections } from '../../data/navigation';
-import { cascade, EASE, gsap, reducedMotion, useGSAP } from '../../lib/motion';
-import './Sidebar.css';
+import { cascade, EASE, gsap, reducedMotion } from '../../lib/motion';
+
+/*
+ * rpd7's nav is MOS's Sidebar (mos/src/components/Sidebar). This wrapper only
+ * hands it rpd7's own things: the navigation data, the Rapid7 marks and
+ * icons, the account switcher, the saved section order, and the motion.
+ * Its styles: MOS Sidebar.css (imported in App.jsx after global.css), the
+ * --sb-* skin mapped to rpd7's tokens in global.css, and the [data-theme]
+ * overrides there, which still target the same class names.
+ */
 
 const NAV_SECTIONS_ORDER_KEY = 'crbntyp-nav-sections-order';
-
-// Helper to reorder nav sections based on saved order
-const getOrderedNavSections = () => {
-  const savedOrder = localStorage.getItem(NAV_SECTIONS_ORDER_KEY);
-  if (savedOrder) {
-    try {
-      const order = JSON.parse(savedOrder);
-      const ordered = [];
-      order.forEach(title => {
-        const section = defaultNavSections.find(s => s.title === title);
-        if (section) ordered.push(section);
-      });
-      // Add any new sections not in saved order
-      defaultNavSections.forEach(section => {
-        if (!ordered.find(s => s.title === section.title)) {
-          ordered.push(section);
-        }
-      });
-      return ordered;
-    } catch (e) {
-      return [...defaultNavSections];
-    }
-  }
-  return [...defaultNavSections];
-};
+const PERSONAL_AVATAR = 'https://i.pravatar.cc/150?u=jpyper';
 
 // Icon components
 const Icons = {
@@ -146,21 +129,6 @@ const Icons = {
       <line x1="10" y1="14" x2="21" y2="3"/>
     </svg>
   ),
-  chevronDown: () => (
-    <svg className="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="6 9 12 15 18 9"/>
-    </svg>
-  ),
-  chevronRight: () => (
-    <svg className="nav-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="9 18 15 12 9 6"/>
-    </svg>
-  ),
-  check: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
-  ),
   user: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -179,16 +147,6 @@ const Icons = {
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
       <polyline points="16 17 21 12 16 7"/>
       <line x1="21" y1="12" x2="9" y2="12"/>
-    </svg>
-  ),
-  dragHandle: () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="9" cy="5" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="15" cy="5" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="9" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="9" cy="19" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="15" cy="19" r="1.5" fill="currentColor" stroke="none"/>
     </svg>
   ),
 };
@@ -215,919 +173,122 @@ const Rapid7Logo = ({ color = 'currentColor', mini = false }) => {
   );
 };
 
-// Back arrow icon
-const BackArrow = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M19 12H5M12 19l-7-7 7-7"/>
-  </svg>
-);
+const motion = sidebarMotion({ gsap, cascade, ease: EASE, reducedMotion });
 
-// NavItem Component - now triggers slide instead of dropdown
-function NavItem({ item, onSelect, isSelected, onMouseEnter, onMouseLeave, dataTour }) {
-  const location = useLocation();
-  const Icon = Icons[item.icon];
+const footerLinks = [
+  { label: 'Platform Home', path: '/', icon: 'home', end: true },
+  { label: 'Hosted Velociraptor', path: '/velociraptor', icon: 'velociraptor' },
+  { label: 'Settings', path: '/settings', icon: 'settings' },
+  { label: 'API documentation', path: '/docs', icon: 'docs' },
+];
 
-  // Check if any sub-item matches the current URL
-  const hasActiveChild = item.subItems?.some(sub => {
-    if (sub.type === 'section') {
-      return sub.items?.some(sectionItem => location.pathname === sectionItem.path);
-    }
-    return location.pathname === sub.path;
-  });
-
-  const isActive = isSelected || hasActiveChild;
-
-  return (
-    <li className={`nav-item-parent ${isActive ? 'has-active-child' : ''}`}>
-      <button
-        className={`nav-item nav-item-toggle ${isActive ? 'active' : ''}`}
-        onClick={() => onSelect(item)}
-        onMouseEnter={(e) => onMouseEnter?.(e, item.label)}
-        onMouseLeave={onMouseLeave}
-        data-tooltip={item.label}
-        data-tour={dataTour}
-      >
-        {Icon && <Icon />}
-        <span>{item.label}</span>
-        <Icons.chevronRight />
-      </button>
-    </li>
-  );
-}
-
-// SubNav Panel Component
-function SubNavPanel({ item, onBack, isVisible, isAnimating }) {
-  const location = useLocation();
-  const Icon = Icons[item?.icon];
-  const [openSections, setOpenSections] = useState({});
-  const panelRef = useRef(null);
-  const { contextSafe } = useGSAP({ scope: panelRef });
-
-  // Opening a section lets its links drop into place one after another as the
-  // section's height eases open, instead of the whole block being revealed
-  // like a blind going up.
-  const toggleSection = contextSafe((label, e) => {
-    const opening = !openSections[label];
-    setOpenSections(prev => ({ ...prev, [label]: !prev[label] }));
-    if (opening && e) {
-      cascade(e.currentTarget.closest('.sub-nav-section')?.querySelectorAll('.sub-nav-item'), { y: -6, stagger: 0.03, delay: 0.05, duration: 0.5 });
-    }
-  });
-
-  // Find which section contains the active path
-  const findActiveSectionLabel = () => {
-    if (!item?.subItems) return null;
-    for (const sub of item.subItems) {
-      if (sub.type === 'section') {
-        for (const sectionItem of sub.items || []) {
-          if (sectionItem.path === location.pathname) {
-            return sub.label;
-          }
-        }
-      }
-    }
-    return null;
-  };
-
-  // Reset open sections when item changes - open all sections by default
-  useEffect(() => {
-    if (item) {
-      const initialOpen = {};
-      item.subItems?.forEach(sub => {
-        if (sub.type === 'section') {
-          // Open all sections by default
-          initialOpen[sub.label] = true;
-        }
-      });
-      setOpenSections(initialOpen);
-    }
-  }, [item?.id]);
-
-  return (
-    <div ref={panelRef} className={`sub-nav-panel ${isVisible ? 'visible' : ''} ${isAnimating ? 'animating' : ''}`} data-tour="sub-nav-panel">
-      <div className="sub-nav-header">
-        {item && Icon && <Icon />}
-        <span className="sub-nav-title">{item?.label}</span>
-        <button className="sub-nav-back" onClick={onBack} aria-label="Back to main navigation">
-          <BackArrow />
-        </button>
-      </div>
-      <div className="sub-nav-list">
-        {item?.subItems?.map((sub, idx) => {
-          // Collapsible section
-          if (sub.type === 'section') {
-            const isOpen = openSections[sub.label];
-            return (
-              <div key={idx} className={`sub-nav-section ${isOpen ? 'open' : ''}`}>
-                <button
-                  className="sub-nav-section-toggle"
-                  onClick={(e) => toggleSection(sub.label, e)}
-                  aria-expanded={isOpen}
-                >
-                  <span>{sub.label}</span>
-                  <Icons.chevronDown />
-                </button>
-                <div className="sub-nav-section-items">
-                  <div className="sub-nav-section-items-inner">
-                    {sub.items?.map((sectionItem, sIdx) => (
-                      <NavLink
-                        key={sIdx}
-                        to={sectionItem.path}
-                        end
-                        className={({ isActive }) => `sub-nav-item ${isActive ? 'active' : ''}`}
-                      >
-                        {sectionItem.label}
-                        {sectionItem.badge && (
-                          <span className={`nav-badge nav-badge-${sectionItem.badge.type}`}>
-                            {sectionItem.badge.count}
-                          </span>
-                        )}
-                      </NavLink>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          }
-
-          // Regular item
-          return (
-            <NavLink
-              key={idx}
-              to={sub.path}
-              end
-              className={({ isActive }) => `sub-nav-item ${isActive ? 'active' : ''}`}
-            >
-              {sub.label}
-              {sub.badge && (
-                <span className={`nav-badge nav-badge-${sub.badge.type}`}>
-                  {sub.badge.count}
-                </span>
-              )}
-            </NavLink>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// Helper function to find nav item containing a path
-function findNavItemByPath(path) {
-  for (const section of defaultNavSections) {
-    for (const item of section.items) {
-      // Check direct subItems
-      for (const sub of item.subItems || []) {
-        if (sub.type === 'section') {
-          // Check items within sections
-          for (const sectionItem of sub.items || []) {
-            if (sectionItem.path === path) {
-              return { item, section: sub.label };
-            }
-          }
-        } else if (sub.path === path) {
-          return { item, section: null };
-        }
-      }
-    }
+// data-tour targets for the walkthrough (TourContext's steps).
+function tourTargets(target) {
+  switch (target.part) {
+    case 'navItem': return target.sectionIndex === 0 && target.itemIndex === 0 ? { 'data-tour': 'nav-item' } : undefined;
+    case 'sectionHandle': return target.sectionIndex === 0 ? { 'data-tour': 'drag-handle' } : undefined;
+    case 'subNavPanel': return { 'data-tour': 'sub-nav-panel' };
+    case 'detachButton': return target.placement === 'header' ? { 'data-tour': 'detach-btn' } : undefined;
+    case 'minimizeButton': return target.placement === 'header' ? { 'data-tour': 'minimize-btn' } : undefined;
+    case 'profileTrigger': return { 'data-tour': 'profile-btn' };
+    case 'menuSection': return target.sectionIndex === 1 ? { 'data-tour': 'mdr-accounts-section' } : undefined;
+    case 'menuAccount': return target.sectionIndex === 1 && target.index === 0 ? { 'data-tour': 'mdr-account' } : undefined;
+    default: return undefined;
   }
-  return null;
 }
 
-// Minimize/Expand icons
-const MinimizeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M11 19l-7-7 7-7"/>
-    <path d="M18 19l-7-7 7-7"/>
-  </svg>
-);
-
-const ExpandIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M13 5l7 7-7 7"/>
-    <path d="M6 5l7 7-7 7"/>
-  </svg>
-);
-
-// Detach icon
-const DetachIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <rect x="3" y="3" width="18" height="18" rx="2" strokeDasharray="4 2"/>
-    <path d="M15 3v6h6"/>
-    <path d="M14 10l7-7"/>
-  </svg>
-);
-
-// Main Sidebar Component
 export default function Sidebar() {
-  const location = useLocation();
-  const { isOpen: isMobileOpen, openSidebar, closeSidebar } = useSidebar();
   const { activeAccountIndex, setActiveAccount, currentAccount, personalAccount, mdrAccounts } = useAccount();
+  const { openSidebar, closeSidebar } = useSidebar();
   const { registerTourActions } = useTour();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [navSections, setNavSections] = useState(getOrderedNavSections);
-  const [draggedSection, setDraggedSection] = useState(null);
-  const [dragOverSection, setDragOverSection] = useState(null);
-  const [activeSubNav, setActiveSubNav] = useState(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [mainNavVisible, setMainNavVisible] = useState(true);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [savedSubNav, setSavedSubNav] = useState(null);
-  const [isDetached, setIsDetached] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragPosition, setDragPosition] = useState({ x: 20, y: 100 });
-  const [showDropZone, setShowDropZone] = useState(false);
-  const [tooltip, setTooltip] = useState({ visible: false, text: '', top: 0 });
-  const [dropdownPosition, setDropdownPosition] = useState({ bottom: 0, left: 0 });
-  const dropdownRef = useRef(null);
-  const profileBtnRef = useRef(null);
-  const sidebarRef = useRef(null);
-  const dragOffset = useRef({ x: 0, y: 0 });
+  const rail = useRef(null);
 
-  const ANIMATION_DURATION = 300; // ms
-  const DROP_ZONE_THRESHOLD = 100; // pixels from left edge to show drop zone
-
-  // Tooltip handlers for minimized sidebar
-  const showTooltip = (e, text) => {
-    if (!isMinimized || isDragging) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    setTooltip({
-      visible: true,
-      text,
-      top: rect.top + rect.height / 2,
-      left: rect.right + 12, // Position to the right of the element
-    });
-  };
-
-  const hideTooltip = () => {
-    setTooltip(prev => ({ ...prev, visible: false }));
-  };
-
-  // Handle dropdown toggle with position calculation for minimized state
-  const handleDropdownToggle = () => {
-    if (!dropdownOpen && isMinimized && sidebarRef.current) {
-      const sidebarRect = sidebarRef.current.getBoundingClientRect();
-      // Position dropdown to the right, with bottom aligned to sidebar bottom
-      setDropdownPosition({
-        bottom: window.innerHeight - sidebarRect.bottom,
-        left: sidebarRect.right + 12,
-      });
-    }
-    setDropdownOpen(!dropdownOpen);
-  };
-
-  // Detach handlers
-  const handleDetachStart = (e) => {
-    e.preventDefault();
-    hideTooltip(); // Hide any visible tooltip when dragging
-    const rect = sidebarRef.current?.getBoundingClientRect();
-    if (rect) {
-      dragOffset.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      };
-    }
-    setIsDragging(true);
-
-    // Detach and minimize
-    if (!isDetached) {
-      if (activeSubNav) {
-        setSavedSubNav(activeSubNav);
-        setActiveSubNav(null);
-        setMainNavVisible(true);
-      }
-      setIsMinimized(true);
-      setIsDetached(true);
-      setDragPosition({ x: e.clientX - 30, y: e.clientY - 30 });
-    }
-  };
-
-  const handleDrag = (e) => {
-    if (!isDragging || !isDetached) return;
-
-    const newX = e.clientX - dragOffset.current.x;
-    const newY = e.clientY - dragOffset.current.y;
-
-    setDragPosition({ x: newX, y: newY });
-
-    // Check if near drop zone (left edge)
-    setShowDropZone(e.clientX < DROP_ZONE_THRESHOLD);
-  };
-
-  const handleDragEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-
-    // If in drop zone, reattach
-    if (showDropZone) {
-      setIsDetached(false);
-      setShowDropZone(false);
-    }
-  };
-
-  // Global mouse move/up listeners for dragging
-  useEffect(() => {
-    if (isDragging) {
-      const handleMouseMove = (e) => handleDrag(e);
-      const handleMouseUp = () => handleDragEnd();
-
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, showDropZone]);
-
-  // No auto-opening of sub-nav on load - start at main nav level
-  // The nav will remember position after user interaction
-
-  // Handle selecting a nav item to show sub-nav
-  const handleNavSelect = (item) => {
-    // If minimized, expand first
-    if (isMinimized) {
-      setIsMinimized(false);
-    }
-
-    if (!item.subItems?.length || isAnimating) return;
-
-    setIsAnimating(true);
-    setMainNavVisible(false);
-    setSavedSubNav(item); // Save selection for minimize/expand
-
-    // After main nav slides out, slide sub-nav in
-    setTimeout(() => {
-      setActiveSubNav(item);
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, ANIMATION_DURATION);
-    }, ANIMATION_DURATION);
-  };
-
-  // Toggle minimize state
-  const toggleMinimize = () => {
-    if (isMinimized) {
-      setIsMinimized(false);
-      // Restore saved nav state when expanding (only if not detached)
-      if (savedSubNav && !isDetached) {
-        setTimeout(() => {
-          setMainNavVisible(false);
-          setTimeout(() => {
-            setActiveSubNav(savedSubNav);
-          }, ANIMATION_DURATION);
-        }, 100);
-      }
-    } else {
-      // Save current nav state before minimizing
-      if (activeSubNav) {
-        setSavedSubNav(activeSubNav);
-        setActiveSubNav(null);
-        setMainNavVisible(true);
-      }
-      setIsMinimized(true);
-      setDropdownOpen(false);
-    }
-  };
-
-  // Handle going back to main nav
-  const handleBack = () => {
-    if (isAnimating) return;
-
-    setIsAnimating(true);
-    setSavedSubNav(null); // Clear saved state when manually going back
-
-    // Slide sub-nav out first
-    setTimeout(() => {
-      setActiveSubNav(null);
-      setMainNavVisible(true);
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, ANIMATION_DURATION);
-    }, ANIMATION_DURATION);
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      // Don't close if clicking on tour elements
-      if (e.target.closest('.tour-tooltip') || e.target.closest('.tour-container')) {
-        return;
-      }
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
-          profileBtnRef.current && !profileBtnRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
-
-  // Close dropdown on escape
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape' && dropdownOpen) {
-        setDropdownOpen(false);
-        profileBtnRef.current?.focus();
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [dropdownOpen]);
-
-  // Register tour actions
+  // The tour drives the rail through MOS's generic handle (apiRef) and finds
+  // its targets by the data-tour attributes put on the rail's parts below.
   useEffect(() => {
     registerTourActions({
       openSubNav: () => {
-        // Open a nav item (first section, first item with subItems)
-        const firstItemWithSubNav = navSections[0]?.items?.find(item => item.subItems?.length);
-        if (firstItemWithSubNav) {
-          setMainNavVisible(false);
-          setTimeout(() => {
-            setActiveSubNav(firstItemWithSubNav);
-            setSavedSubNav(firstItemWithSubNav);
-          }, ANIMATION_DURATION);
-        }
+        // The first item with a panel, in the current (maybe reordered) order.
+        const first = rail.current?.sections()[0]?.items?.find((item) => item.subItems?.length);
+        if (first) rail.current.openItem(first.id);
       },
-      goBackToMainNav: () => {
-        if (activeSubNav) {
-          setActiveSubNav(null);
-          setMainNavVisible(true);
-        }
-      },
-      openProfileDropdown: () => {
-        setDropdownOpen(true);
-      },
-      closeProfileDropdown: () => {
-        setDropdownOpen(false);
-      },
+      goBackToMainNav: () => rail.current?.closeItem(),
+      openProfileDropdown: () => rail.current?.openMenu(),
+      closeProfileDropdown: () => rail.current?.closeMenu(),
       selectFirstMdrAccount: () => {
-        if (mdrAccounts.length > 0) {
-          setActiveAccount(0);
-        }
+        if (mdrAccounts.length > 0) setActiveAccount(0);
       },
       resetSidebarForTour: () => {
-        // Reset to main nav, not minimized, not detached
-        setActiveSubNav(null);
-        setMainNavVisible(true);
-        setIsMinimized(false);
-        setIsDetached(false);
-        setDropdownOpen(false);
+        rail.current?.reset();
         // Open sidebar on mobile
         openSidebar();
       },
-      closeMobileSidebar: () => {
-        closeSidebar();
-      },
+      closeMobileSidebar: () => closeSidebar(),
       cleanupAfterTour: () => {
-        // Optional cleanup after tour ends
-        setDropdownOpen(false);
+        rail.current?.closeMenu();
         closeSidebar();
       },
     });
-  }, [registerTourActions, navSections, activeSubNav, mdrAccounts, setActiveAccount, openSidebar, closeSidebar]);
+  }, [registerTourActions, mdrAccounts, setActiveAccount, openSidebar, closeSidebar]);
 
-  const handleAccountSwitch = (index) => {
-    setActiveAccount(index);
-    setTimeout(() => setDropdownOpen(false), 200);
-  };
+  const account = currentAccount.isPersonal
+    ? { name: currentAccount.name, sub: currentAccount.email, avatar: PERSONAL_AVATAR }
+    : { name: currentAccount.name, sub: 'Jonny Pyper', avatar: currentAccount.logo, logo: true };
 
-  // Section drag handlers
-  const handleSectionDragStart = (e, sectionIdx) => {
-    setDraggedSection(sectionIdx);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', sectionIdx.toString());
-    // Add dragging class after a tick to avoid flash
-    setTimeout(() => {
-      e.target.closest('.nav-section')?.classList.add('dragging');
-    }, 0);
-  };
-
-  const handleSectionDragEnd = (e) => {
-    setDraggedSection(null);
-    setDragOverSection(null);
-    document.querySelectorAll('.nav-section').forEach(el => {
-      el.classList.remove('dragging', 'drag-over', 'drag-over-top', 'drag-over-bottom');
-    });
-  };
-
-  const handleSectionDragOver = (e, sectionIdx) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-
-    if (draggedSection === null || draggedSection === sectionIdx) return;
-
-    const sectionEl = e.target.closest('.nav-section');
-    if (!sectionEl) return;
-
-    const rect = sectionEl.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    const isAbove = e.clientY < midY;
-
-    // Remove previous indicators
-    document.querySelectorAll('.nav-section').forEach(el => {
-      if (el !== sectionEl) {
-        el.classList.remove('drag-over', 'drag-over-top', 'drag-over-bottom');
-      }
-    });
-
-    sectionEl.classList.add('drag-over');
-    sectionEl.classList.toggle('drag-over-top', isAbove);
-    sectionEl.classList.toggle('drag-over-bottom', !isAbove);
-
-    setDragOverSection(sectionIdx);
-  };
-
-  const handleSectionDrop = (e, targetIdx) => {
-    e.preventDefault();
-
-    if (draggedSection === null || draggedSection === targetIdx) return;
-
-    const sectionEl = e.target.closest('.nav-section');
-    const rect = sectionEl?.getBoundingClientRect();
-    const isAbove = rect ? e.clientY < rect.top + rect.height / 2 : false;
-
-    const newSections = [...navSections];
-    const [draggedItem] = newSections.splice(draggedSection, 1);
-
-    // Calculate new index
-    let newIdx = targetIdx;
-    if (draggedSection < targetIdx) {
-      newIdx = isAbove ? targetIdx - 1 : targetIdx;
-    } else {
-      newIdx = isAbove ? targetIdx : targetIdx + 1;
-    }
-
-    newSections.splice(newIdx, 0, draggedItem);
-    setNavSections(newSections);
-
-    // Save order to localStorage
-    const order = newSections.map(s => s.title);
-    localStorage.setItem(NAV_SECTIONS_ORDER_KEY, JSON.stringify(order));
-
-    setDraggedSection(null);
-    setDragOverSection(null);
-  };
-
-  /*
-   * Motion (lib/motion).
-   *
-   * On load the mark slides in and the navigation cascades down the rail —
-   * this replaces the CSS keyframe entrance, whose forwards fill would have
-   * pinned every item's transform and made it impossible to move them again.
-   *
-   * Drilling into a section: the CSS still slides the panel (that timing is
-   * what the tour and handleNavSelect's timeouts are built on), and GSAP makes
-   * its contents trail in behind it a beat apart, so the move reads as going
-   * somewhere rather than a list being swapped. Coming back does the same for
-   * the main rail.
-   */
-  useGSAP(() => {
-    if (reducedMotion()) return;
-    const q = gsap.utils.selector(sidebarRef);
-    const tl = gsap.timeline({ defaults: { ease: EASE } });
-    // cascade() returns null for an empty selection; a timeline would throw on it.
-    const at = (tween, position) => tween && tl.add(tween, position);
-    at(cascade(q('.logo-svg'), { x: -14, duration: 0.8 }), 0);
-    at(cascade(q('.main-nav .nav-section-title, .main-nav .nav-item'), { x: -16, stagger: 0.028, duration: 0.7 }), 0.08);
-    at(cascade(q('.sidebar-footer-links .nav-item'), { x: -16, stagger: 0.04, duration: 0.7 }), 0.45);
-    at(cascade(q('.user-profile'), { y: 10, duration: 0.7 }), 0.55);
-  }, { scope: sidebarRef });
-
-  const drilledIn = useRef(false);
-  useGSAP(() => {
-    const q = gsap.utils.selector(sidebarRef);
-    if (activeSubNav) {
-      drilledIn.current = true;
-      cascade(q('.sub-nav-header, .sub-nav-list > *'), { x: -24, stagger: 0.035, duration: 0.7 });
-    } else if (drilledIn.current && mainNavVisible) {
-      drilledIn.current = false;
-      cascade(q('.main-nav .nav-section-title, .main-nav .nav-item'), { x: -24, stagger: 0.02, duration: 0.7 });
-    }
-  }, { scope: sidebarRef, dependencies: [activeSubNav?.id, mainNavVisible] });
-
-  // The account menu's groups settle in order as it opens.
-  useGSAP(() => {
-    if (!dropdownOpen) return;
-    cascade(gsap.utils.selector(dropdownRef)('.dropdown-section, .dropdown-footer'), { y: 8, stagger: 0.04, duration: 0.5 });
-  }, { dependencies: [dropdownOpen] });
-
-  const sidebarClasses = [
-    'sidebar',
-    isMinimized ? 'minimized' : '',
-    isDetached ? 'detached' : '',
-    isDragging ? 'dragging' : '',
-    isMobileOpen ? 'open' : '',
-  ].filter(Boolean).join(' ');
-
-  const sidebarStyle = isDetached ? {
-    left: `${dragPosition.x}px`,
-    top: `${dragPosition.y}px`,
-  } : {};
-
-  // Close sidebar when navigating on mobile (skip initial mount)
-  const prevPathRef = useRef(location.pathname);
-  useEffect(() => {
-    if (prevPathRef.current !== location.pathname) {
-      closeSidebar();
-      prevPathRef.current = location.pathname;
-    }
-  }, [location.pathname, closeSidebar]);
+  const menu = [
+    {
+      title: 'My Account',
+      accounts: [{
+        name: personalAccount.name,
+        sub: personalAccount.email,
+        avatar: PERSONAL_AVATAR,
+        active: activeAccountIndex === null,
+        onSelect: () => setActiveAccount(null),
+      }],
+    },
+    {
+      title: 'MDR Accounts',
+      scrollable: true,
+      accounts: mdrAccounts.map((mdr, idx) => ({
+        name: mdr.name,
+        sub: 'Jonny Pyper',
+        avatar: mdr.logo,
+        logo: true,
+        active: activeAccountIndex === idx,
+        onSelect: () => setActiveAccount(idx),
+      })),
+    },
+    {
+      links: [
+        { label: 'My profile', icon: 'user', href: '#', meta: 'jpyper@rapid7.com' },
+        { label: 'Account settings', icon: 'settings', href: '#' },
+        { label: 'Device management', icon: 'device', href: '#' },
+      ],
+    },
+    {
+      links: [{ label: 'Sign out', icon: 'logout', href: '#' }],
+    },
+  ];
 
   return (
-    <>
-      {/* Mobile overlay backdrop */}
-      <div
-        className={`sidebar-overlay ${isMobileOpen ? 'visible' : ''}`}
-        onClick={closeSidebar}
-        aria-hidden="true"
-      />
-
-      {/* Drop zone indicator */}
-      <div className={`sidebar-drop-zone ${showDropZone ? 'visible' : ''}`} />
-
-      {/* data-lenis-prevent: the rail scrolls itself, so a wheel over it
-          must reach it rather than being smoothed into a page scroll. */}
-      <aside
-        ref={sidebarRef}
-        className={sidebarClasses}
-        style={sidebarStyle}
-        data-lenis-prevent
-      >
-        <div className="sidebar-content">
-          {/* Header */}
-          <header
-            className="sidebar-header"
-            onMouseDown={isDetached ? handleDetachStart : undefined}
-            style={isDetached ? { cursor: 'grab' } : undefined}
-          >
-            <div className="logo">
-              {isMinimized ? <Rapid7Logo mini /> : <Rapid7Logo />}
-            </div>
-            {!isMinimized && (
-              <div className="sidebar-header-actions">
-                {!isDetached && (
-                  <button
-                    className="sidebar-toggle"
-                    onMouseDown={handleDetachStart}
-                    title="Drag to detach sidebar"
-                    data-tour="detach-btn"
-                  >
-                    <DetachIcon />
-                  </button>
-                )}
-                <button
-                  className="sidebar-toggle"
-                  onClick={toggleMinimize}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  title={isMinimized ? 'Expand sidebar' : 'Minimize sidebar'}
-                  data-tour="minimize-btn"
-                >
-                  {isMinimized ? <ExpandIcon /> : <MinimizeIcon />}
-                </button>
-              </div>
-            )}
-          </header>
-
-        {/* Navigation Container */}
-        <div className="nav-container">
-          {/* Sidebar Controls - shown when minimized */}
-          {isMinimized && (
-            <div className="sidebar-controls">
-              {!isDetached && (
-                <button
-                  className="sidebar-toggle"
-                  onMouseDown={handleDetachStart}
-                  title="Drag to detach sidebar"
-                  data-tooltip="Detach"
-                >
-                  <DetachIcon />
-                </button>
-              )}
-              <button
-                className="sidebar-toggle"
-                onClick={toggleMinimize}
-                onMouseDown={(e) => e.stopPropagation()}
-                title="Expand sidebar"
-                data-tooltip="Expand"
-              >
-                <ExpandIcon />
-              </button>
-            </div>
-          )}
-
-          {/* Main Navigation */}
-          <nav className={`sidebar-nav main-nav ${mainNavVisible ? 'visible' : 'hidden'} ${isAnimating ? 'animating' : ''}`}>
-            {navSections.map((section, sectionIdx) => (
-              <div
-                key={section.title}
-                className={`nav-section ${draggedSection === sectionIdx ? 'dragging' : ''} ${dragOverSection === sectionIdx ? 'drag-over' : ''}`}
-                draggable
-                onDragStart={(e) => handleSectionDragStart(e, sectionIdx)}
-                onDragEnd={handleSectionDragEnd}
-                onDragOver={(e) => handleSectionDragOver(e, sectionIdx)}
-                onDrop={(e) => handleSectionDrop(e, sectionIdx)}
-              >
-                <div className="nav-section-header">
-                  <span
-                    className="nav-section-drag-handle"
-                    title="Drag to reorder"
-                    data-tour={sectionIdx === 0 ? 'drag-handle' : undefined}
-                  >
-                    <Icons.dragHandle />
-                  </span>
-                  <span className="nav-section-title">{section.title}</span>
-                </div>
-                <ul className="nav-list">
-                  {section.items.map((item, itemIdx) => (
-                    <NavItem
-                      key={item.id}
-                      item={item}
-                      onSelect={handleNavSelect}
-                      isSelected={activeSubNav?.id === item.id || savedSubNav?.id === item.id}
-                      onMouseEnter={showTooltip}
-                      onMouseLeave={hideTooltip}
-                      dataTour={sectionIdx === 0 && itemIdx === 0 ? 'nav-item' : undefined}
-                    />
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </nav>
-
-          {/* Sub Navigation Panel */}
-          <SubNavPanel
-            item={activeSubNav}
-            onBack={handleBack}
-            isVisible={!!activeSubNav}
-            isAnimating={isAnimating}
-          />
-        </div>
-
-        {/* Footer Links */}
-        <div className="sidebar-footer-links">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-            data-tooltip="Platform Home"
-            onMouseEnter={(e) => showTooltip(e, 'Platform Home')}
-            onMouseLeave={hideTooltip}
-          >
-            <Icons.home />
-            <span>Platform Home</span>
-          </NavLink>
-          <NavLink
-            to="/velociraptor"
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-            data-tooltip="Hosted Velociraptor"
-            onMouseEnter={(e) => showTooltip(e, 'Hosted Velociraptor')}
-            onMouseLeave={hideTooltip}
-          >
-            <Icons.velociraptor />
-            <span>Hosted Velociraptor</span>
-          </NavLink>
-          <NavLink
-            to="/settings"
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-            data-tooltip="Settings"
-            onMouseEnter={(e) => showTooltip(e, 'Settings')}
-            onMouseLeave={hideTooltip}
-          >
-            <Icons.settings />
-            <span>Settings</span>
-          </NavLink>
-          <NavLink
-            to="/docs"
-            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-            data-tooltip="API documentation"
-            onMouseEnter={(e) => showTooltip(e, 'API documentation')}
-            onMouseLeave={hideTooltip}
-          >
-            <Icons.docs />
-            <span>API documentation</span>
-          </NavLink>
-        </div>
-
-        {/* User Profile */}
-        <div className="sidebar-footer">
-          <button
-            ref={profileBtnRef}
-            className="user-profile"
-            aria-expanded={dropdownOpen}
-            aria-haspopup="true"
-            onClick={handleDropdownToggle}
-            onMouseEnter={(e) => showTooltip(e, currentAccount.name)}
-            onMouseLeave={hideTooltip}
-            data-tooltip={currentAccount.name}
-            data-tour="profile-btn"
-          >
-            <div className={`user-avatar ${currentAccount.isPersonal ? '' : 'company-logo'}`}>
-              {currentAccount.isPersonal ? (
-                <img src="https://i.pravatar.cc/150?u=jpyper" alt={currentAccount.name} />
-              ) : (
-                <img src={currentAccount.logo} alt={currentAccount.name} />
-              )}
-              <span className="online-indicator"></span>
-            </div>
-            <div className="user-info">
-              <span className="user-name">{currentAccount.name}</span>
-              <span className="user-email">{currentAccount.isPersonal ? currentAccount.email : 'Jonny Pyper'}</span>
-            </div>
-            <Icons.chevronDown />
-          </button>
-
-          {/* Dropdown */}
-          <div
-            ref={dropdownRef}
-            className={`user-dropdown ${dropdownOpen ? 'open' : ''}`}
-            style={isMinimized ? { bottom: dropdownPosition.bottom, left: dropdownPosition.left, top: 'auto' } : undefined}
-          >
-            {/* Personal Account */}
-            <div className="dropdown-section">
-              <span className="dropdown-section-title">My Account</span>
-              <button
-                className={`dropdown-user ${activeAccountIndex === null ? 'active' : ''}`}
-                onClick={() => handleAccountSwitch(null)}
-              >
-                <div className="user-avatar small">
-                  <img src="https://i.pravatar.cc/150?u=jpyper" alt={personalAccount.name} />
-                </div>
-                <div className="dropdown-user-info">
-                  <span className="dropdown-user-name">{personalAccount.name}</span>
-                  <span className="dropdown-user-email">{personalAccount.email}</span>
-                </div>
-                <span className="check-icon">
-                  <Icons.check />
-                </span>
-              </button>
-            </div>
-            <div className="dropdown-divider"></div>
-            {/* MDR Accounts */}
-            <div className="dropdown-section dropdown-section-scrollable" data-tour="mdr-accounts-section">
-              <span className="dropdown-section-title">MDR Accounts</span>
-              <div className="dropdown-section-scroll">
-                {mdrAccounts.map((account, idx) => (
-                  <button
-                    key={idx}
-                    className={`dropdown-user ${activeAccountIndex === idx ? 'active' : ''}`}
-                    onClick={() => handleAccountSwitch(idx)}
-                    data-tour={idx === 0 ? 'mdr-account' : undefined}
-                  >
-                    <div className="user-avatar small company-logo">
-                      <img src={account.logo} alt={account.name} />
-                    </div>
-                    <div className="dropdown-user-info">
-                      <span className="dropdown-user-name">{account.name}</span>
-                      <span className="dropdown-user-email">Jonny Pyper</span>
-                    </div>
-                    <span className="check-icon">
-                      <Icons.check />
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="dropdown-divider"></div>
-            <div className="dropdown-section">
-              <a href="#" className="dropdown-item">
-                <Icons.user />
-                <span>My profile</span>
-                <span className="dropdown-item-meta">jpyper@rapid7.com</span>
-              </a>
-              <a href="#" className="dropdown-item">
-                <Icons.settings />
-                <span>Account settings</span>
-              </a>
-              <a href="#" className="dropdown-item">
-                <Icons.device />
-                <span>Device management</span>
-              </a>
-            </div>
-            <div className="dropdown-divider"></div>
-            <div className="dropdown-section">
-              <a href="#" className="dropdown-item">
-                <Icons.logout />
-                <span>Sign out</span>
-              </a>
-            </div>
-            <div className="dropdown-footer">
-              <div className="dropdown-brand">
-                <Rapid7Logo color="#a1a1aa" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tooltip for minimized sidebar */}
-      {tooltip.visible && (
-        <div className="sidebar-tooltip" style={{ top: tooltip.top, left: tooltip.left }}>
-          {tooltip.text}
-        </div>
-      )}
-    </aside>
-    </>
+    <MosSidebar
+      sections={defaultNavSections}
+      footerLinks={footerLinks}
+      logo={<Rapid7Logo />}
+      logoMini={<Rapid7Logo mini />}
+      account={account}
+      menu={menu}
+      menuFooter={<Rapid7Logo color="#a1a1aa" />}
+      icons={Icons}
+      orderStorageKey={NAV_SECTIONS_ORDER_KEY}
+      motion={motion}
+      /* data-lenis-prevent: the rail scrolls itself, so a wheel over it
+         must reach it rather than being smoothed into a page scroll. */
+      rootProps={{ 'data-lenis-prevent': true }}
+      partProps={tourTargets}
+      apiRef={rail}
+      // Clicking the tour's own controls must not close the account menu.
+      menuIgnoreOutside=".tour-tooltip, .tour-container"
+    />
   );
 }
